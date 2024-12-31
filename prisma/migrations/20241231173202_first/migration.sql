@@ -1,4 +1,7 @@
 -- CreateEnum
+CREATE TYPE "LeaseTypes" AS ENUM ('WEEKLY', 'MONTHLY', 'YEARLY');
+
+-- CreateEnum
 CREATE TYPE "PropertyPaymentTypes" AS ENUM ('CASH', 'INSTALLMENT');
 
 -- CreateEnum
@@ -36,28 +39,20 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "Address" (
-    "id" SERIAL NOT NULL,
-    "street" TEXT NOT NULL,
-    "country" TEXT NOT NULL,
-    "zipCode" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Address_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Property" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT NOT NULL,
     "phoneNumber" TEXT NOT NULL,
     "propertyType" "PropertyTypes" NOT NULL,
-    "addressId" INTEGER NOT NULL,
     "area" INTEGER NOT NULL,
+    "street" TEXT,
+    "country" TEXT,
+    "city" TEXT,
+    "zipCode" TEXT,
     "roomsNumber" INTEGER NOT NULL,
     "bathroomNumber" INTEGER NOT NULL,
+    "bedroomNumber" INTEGER,
     "floorsNumber" INTEGER NOT NULL,
     "status" "PropertyStatus" NOT NULL,
     "finishType" "PropertyFinishTypes" NOT NULL,
@@ -65,8 +60,9 @@ CREATE TABLE "Property" (
     "paymentType" "PropertyPaymentTypes" NOT NULL,
     "additionalFeatures" TEXT[],
     "media" TEXT[],
-    "amenitiyId" INTEGER NOT NULL,
-    "facilityId" INTEGER NOT NULL,
+    "amenities" TEXT[],
+    "facilities" TEXT[],
+    "userId" TEXT,
     "numberOfReviews" INTEGER NOT NULL DEFAULT 0,
     "averageRatings" INTEGER NOT NULL DEFAULT 0,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -76,31 +72,10 @@ CREATE TABLE "Property" (
 );
 
 -- CreateTable
-CREATE TABLE "Facilities" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Facilities_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Amenities" (
-    "id" SERIAL NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "Amenities_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Review" (
     "id" SERIAL NOT NULL,
     "userId" TEXT NOT NULL,
+    "propertyId" INTEGER NOT NULL,
     "rating" INTEGER NOT NULL,
     "comment" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -136,11 +111,20 @@ CREATE TABLE "Order" (
 );
 
 -- CreateTable
-CREATE TABLE "_AddressToUser" (
-    "A" INTEGER NOT NULL,
-    "B" TEXT NOT NULL,
+CREATE TABLE "Request" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "userId" TEXT,
+    "phoneNumber" TEXT NOT NULL,
+    "leaseType" "LeaseTypes" NOT NULL,
+    "fromDate" TIMESTAMP(3) NOT NULL,
+    "toDate" TIMESTAMP(3) NOT NULL,
+    "message" TEXT NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "_AddressToUser_AB_pkey" PRIMARY KEY ("A","B")
+    CONSTRAINT "Request_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateIndex
@@ -149,20 +133,14 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 -- CreateIndex
 CREATE UNIQUE INDEX "Cart_userId_propertyId_key" ON "Cart"("userId", "propertyId");
 
--- CreateIndex
-CREATE INDEX "_AddressToUser_B_index" ON "_AddressToUser"("B");
-
 -- AddForeignKey
-ALTER TABLE "Property" ADD CONSTRAINT "Property_addressId_fkey" FOREIGN KEY ("addressId") REFERENCES "Address"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Property" ADD CONSTRAINT "Property_amenitiyId_fkey" FOREIGN KEY ("amenitiyId") REFERENCES "Amenities"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Property" ADD CONSTRAINT "Property_facilityId_fkey" FOREIGN KEY ("facilityId") REFERENCES "Facilities"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Property" ADD CONSTRAINT "Property_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Review" ADD CONSTRAINT "Review_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Review" ADD CONSTRAINT "Review_propertyId_fkey" FOREIGN KEY ("propertyId") REFERENCES "Property"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Cart" ADD CONSTRAINT "Cart_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -174,7 +152,4 @@ ALTER TABLE "Cart" ADD CONSTRAINT "Cart_propertyId_fkey" FOREIGN KEY ("propertyI
 ALTER TABLE "Order" ADD CONSTRAINT "Order_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_AddressToUser" ADD CONSTRAINT "_AddressToUser_A_fkey" FOREIGN KEY ("A") REFERENCES "Address"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_AddressToUser" ADD CONSTRAINT "_AddressToUser_B_fkey" FOREIGN KEY ("B") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Request" ADD CONSTRAINT "Request_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
