@@ -189,6 +189,12 @@ export const getAllProperties = async (req, res) => {
           userId: true,
           rating: true,
           comment: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
         },
       },
     },

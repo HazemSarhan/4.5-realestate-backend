@@ -15,11 +15,11 @@ const router = express.Router();
 router
   .route('/')
   .post([authenticatedUser], createProperty)
-  .get([authenticatedUser], getAllProperties);
+  .get(getAllProperties);
 
 router
   .route('/:id')
-  .get([authenticatedUser], getPropertyById)
+  .get(getPropertyById)
   .patch([authenticatedUser], updateProperty)
   .delete([authenticatedUser], deleteProperty);
 
