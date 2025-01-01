@@ -30,10 +30,7 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: [
-      'https://zero4-realestate-frontend.onrender.com',
-      'http://localhost:3001',
-    ],
+    origin: ['https://unidorm.vercel.app/', 'http://localhost:3001'],
     methods: ['GET', 'POST', 'PUT', 'DELETE'],
     credentials: true,
   })
